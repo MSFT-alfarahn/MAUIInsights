@@ -1,4 +1,7 @@
-﻿namespace MAUIInsights;
+﻿using Microsoft.Extensions.Configuration;
+using System.Reflection;
+
+namespace MAUIInsights;
 
 public static class MauiProgram
 {
@@ -13,6 +16,24 @@ public static class MauiProgram
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 			});
 
-		return builder.Build();
+        var a = typeof(App).GetTypeInfo().Assembly;
+        var stream = a.GetManifestResourceStream($"{a.GetName().Name}.appsettings.json");
+
+        var config = new ConfigurationBuilder()
+                    .AddJsonStream(stream)
+                    .Build();
+
+
+        builder.Configuration.AddConfiguration(config);
+        builder.Services.AddTransient<MainPage>();
+
+        return builder.Build();
 	}
+}
+
+
+public class Settings
+{
+    public string AppInsights { get; set; }
+    public string QuickPulse { get; set; }
 }
