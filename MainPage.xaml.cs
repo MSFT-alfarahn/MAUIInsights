@@ -1,30 +1,49 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.ApplicationInsights.Extensibility.PerfCounterCollector.QuickPulse;
+using Microsoft.Extensions.Configuration;
 
 namespace MAUIInsights;
 
 public partial class MainPage : ContentPage
 {
-	int count = 0;
-    IConfiguration configuration;
+    private readonly Settings _settings;
+    private readonly IConfiguration _configuration;
+
     public MainPage(IConfiguration config)
     {
 		InitializeComponent();
 
-        configuration = config;
+        _configuration = config;
+        _settings = _configuration.GetRequiredSection("Settings").Get<Settings>();
     }
 
-	private async void OnCounterClicked(object sender, EventArgs e)
-	{
-		count++;
+    private TelemetryClient GetTelemetryClient()
+    {
+        TelemetryConfiguration config = TelemetryConfiguration.CreateDefault();
+        config.ConnectionString = _settings.AppInsights;
+        QuickPulseTelemetryProcessor quickPulseProcessor = null;
+        config.DefaultTelemetrySink.TelemetryProcessorChainBuilder
+            .Use((next) =>
+            {
+                quickPulseProcessor = new QuickPulseTelemetryProcessor(next);
+                return quickPulseProcessor;
+            })
+            .Build();
 
-		if (count == 1)
-			CounterBtn.Text = $"Clicked {count} time";
-		else
-			CounterBtn.Text = $"Clicked {count} times";
+        var quickPulseModule = new QuickPulseTelemetryModule
+        {
+            AuthenticationApiKey =_settings.QuickPulse 
+        };
+        quickPulseModule.Initialize(config);
+        quickPulseModule.RegisterTelemetryProcessor(quickPulseProcessor);
+        TelemetryClient client = new(config);
+        return client;
+    }
 
-		SemanticScreenReader.Announce(CounterBtn.Text);
+    private void Button_Clicked(object sender, EventArgs e)
+    {
 
-        var settings = configuration.GetRequiredSection("Settings").Get<Settings>();
     }
 }
 
