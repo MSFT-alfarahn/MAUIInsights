@@ -66,17 +66,31 @@ public partial class MainPage : ContentPage
             // automatically without any additional steps.
             
             _telemetry.TrackDependency(
-                "My Dependency", 
+                "Bad Dependency", 
                 "target", 
                 "data",
                 DateTimeOffset.Now, 
-                TimeSpan.FromMilliseconds(30 * i), 
+                TimeSpan.FromMilliseconds(50 * i), 
                 true);
 
-            _telemetry.TrackRequest("My Request", 
+            _telemetry.TrackDependency(
+                "Good Dependency",
+                "target",
+                "data",
                 DateTimeOffset.Now,
-                TimeSpan.FromMilliseconds(30 * i), 
+                TimeSpan.FromMilliseconds(3 * i),
+                true);
+
+            _telemetry.TrackRequest("Bad Request", 
+                DateTimeOffset.Now,
+                TimeSpan.FromMilliseconds(50 * i), 
                 "200", 
+                true);
+
+            _telemetry.TrackRequest("Bad Request",
+                DateTimeOffset.Now,
+                TimeSpan.FromMilliseconds(3 * i),
+                "200",
                 true);
 
             await Task.Delay(100);
