@@ -1,8 +1,4 @@
-﻿using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.ApplicationInsights.Extensibility.PerfCounterCollector.QuickPulse;
-using Microsoft.Extensions.Configuration;
-
+﻿
 namespace MAUIInsights;
 
 public partial class MainPage : ContentPage
@@ -46,6 +42,9 @@ public partial class MainPage : ContentPage
 
     private async void Button_Clicked(object sender, EventArgs ev)
     {
+        _telemetry.Context.Device.Model = Microsoft.Maui.Devices.DeviceInfo.Current.Model;
+        _telemetry.Context.Device.OperatingSystem = Microsoft.Maui.Devices.DeviceInfo.Current.Platform.ToString();
+
         _runThread = true;
 
         List<Thread> threads = new List<Thread>();
@@ -58,7 +57,7 @@ public partial class MainPage : ContentPage
 
         // Track Requests
         // This sample runs indefinitely. Replace with actual application logic.
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 3; i++)
         {
             // Send dependency and request telemetry.
             // These will be shown in Live Metrics stream.
